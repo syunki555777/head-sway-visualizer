@@ -166,18 +166,49 @@ function drawBars(series){
     const W = barCanvas.width, H = barCanvas.height;
     bctx.clearRect(0,0,W,H);
 
-    const n = series.length;
-    if (!n) return;
-
     const pad = 24;
-    const cw = (W - pad*2) / n;
-    const max = Math.max(...series, 0.0001);
 
-    // x軸
+    // 軸（X軸・Y軸）
+    bctx.save();
     bctx.globalAlpha = .8;
     bctx.lineWidth = 1;
     bctx.strokeStyle = "rgba(255,255,255,.25)";
-    bctx.beginPath(); bctx.moveTo(pad,H-pad); bctx.lineTo(W-pad,H-pad); bctx.stroke();
+    // X軸
+    bctx.beginPath(); bctx.moveTo(pad, H - pad); bctx.lineTo(W - pad, H - pad); bctx.stroke();
+    // Y軸
+    bctx.beginPath(); bctx.moveTo(pad, pad);     bctx.lineTo(pad,     H - pad); bctx.stroke();
+
+    const n = series.length;
+    if (!n){ 
+        bctx.restore();
+        return; 
+    }
+
+    const cw = (W - pad*2) / n;
+    const max = Math.max(...series, 0.0001);
+
+    // Y軸目盛り・グリッド
+    const ticks = 4; // 0〜max を5分割（目盛り数は ticks+1）
+    bctx.font = "10px system-ui, sans-serif";
+    bctx.fillStyle = "rgba(255,255,255,.6)";
+    bctx.textAlign = "right";
+    bctx.textBaseline = "middle";
+    for (let i = 0; i <= ticks; i++){
+        const t = i / ticks;
+        const y = H - pad - t * (H - pad*2);
+        const val = t * max;
+
+        // グリッドライン（最下段は軸色、それ以外は薄め）
+        bctx.beginPath();
+        bctx.moveTo(pad, y);
+        bctx.lineTo(W - pad, y);
+        bctx.strokeStyle = (i === 0) ? "rgba(255,255,255,.25)" : "rgba(255,255,255,.12)";
+        bctx.stroke();
+
+        // 目盛りラベル
+        bctx.fillText(val.toFixed(2), pad - 6, y);
+    }
+    bctx.restore();
 
     // bars
     bctx.globalAlpha = 1;
